@@ -14,6 +14,7 @@
 using namespace std;
 
 Terrain::Terrain()
+//Constructs an empty terrain map
 {
     height = 100;
     width = 100;
@@ -29,6 +30,7 @@ Terrain::Terrain()
 }
 
 Terrain::Terrain(int h, int w)
+//Constructs an empty terrain map with user given dimensions
 {
     height = h;
     width = w;
@@ -44,6 +46,7 @@ Terrain::Terrain(int h, int w)
 }
 
 int Terrain::heightDiff(int a, int b, int c, int d)
+//Calculates height difference between two tiles
 {
     if (tiles[c][d] == 0)
     {
@@ -56,6 +59,7 @@ int Terrain::heightDiff(int a, int b, int c, int d)
 }
 
 bool Terrain::isValidTile(int i, int j)
+//Around tile[i][j], how many tiles are more than 1 unit higher/lower than tile[i][j]?
 {
     int v = 0;
     if (heightDiff(i, j, i - 1, j) > 1)
@@ -103,12 +107,14 @@ bool Terrain::isValidTile(int i, int j)
 }
 
 void Terrain::genAlt()
+//Generates heights from the top right corner (this results in vertical patterns)
 {
     RandomNumber randAlt(1, 9);
     for (int j = 1; j < (width - 1); j++)
     {
         for (int i = 1; i < (height - 1); i ++)
         {
+            //Continuously "smoothens" the tile until its height is not overly different from its neighbors 
             do
             {
                 tiles[i][j] = randAlt.random();
@@ -119,6 +125,7 @@ void Terrain::genAlt()
 }
 
 void Terrain::rgenAlt()
+//Generates the heights, starting from a random tile
 {
     RandomNumber randAlt(1, 9);
     RandomNumber rh(1, (height - 2));
@@ -133,17 +140,21 @@ void Terrain::rgenAlt()
     {
         i = rh.random();
         j = rw.random();
+        
+        //Check if the tile hasn't been assigned a height
         if (tiles[i][j] == 0)
         {
             tiles[i][j] = randAlt.random();
+            //Number of attempts to smoothen the tile
             int reassigned = 0;
+            //Smoothening: regenerates height of the tile until it does not have much difference with its neighbors 
             while (!isValidTile(i, j) && reassigned <= 100)
             {
                     
                 tiles[i][j] = randAlt.random();
                 reassigned++;
             }
-                
+            //If attempts fail continuously, record the tile as an exception
             if (reassigned > 100)
             {
                 numExceptions++;
@@ -159,13 +170,19 @@ void Terrain::rgenAlt()
 }
 
 void Terrain::flood(int i, int j)
+//Floods the adjacent tiles of a "water" tile, changing them to "water" (value 10)
 {
+    //Stop generating water upon reaching another water body or the map boundaries 
     if (tiles [i][j] == 10 || i <= 2 || i >= (height - 2) || j <= 2 || j >= (width - 2))
     {
         return;
     }
+    
+    //Water flows down, so in order for a tile to be flooded, 
+    //it must have lower height than an adjacent "water" tile
     int prevHeight = tiles [i][j];
     tiles [i][j] = 10;
+    //Floods in 4 directions from the current tile
     if (tiles[i + 1][j] <= prevHeight)
     {
         flood(i + 1, j);
@@ -185,6 +202,7 @@ void Terrain::flood(int i, int j)
 }
 
 void Terrain::genWater()
+//Generates water bodies, starting from a random tile
 {
     RandomNumber rh(2, (height - 2));
     RandomNumber rw(2, (width - 2));
@@ -200,6 +218,7 @@ void Terrain::genWater()
 }
 
 void Terrain::printMtWater()
+//Plots all the water bodies
 {
     for (int i = 0; i < height; i ++)
     {
@@ -227,6 +246,7 @@ void Terrain::printMtWater()
 }
 
 void Terrain::printTerrain()
+//Plots the terrain as ASCII grey scale characters
 {
     for (int i = 0; i < height; i ++)
     {
@@ -274,6 +294,7 @@ void Terrain::printTerrain()
 }
 
 double Terrain::calcWater()
+//Calculates percentage of water 
 {
     double waternum = 0;
     for (int i = 0; i < height; i ++)
